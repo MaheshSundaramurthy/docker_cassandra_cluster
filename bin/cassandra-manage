@@ -1,0 +1,57 @@
+#!/bin/bash
+set -eo pipefail
+
+preStart() {
+    _log "Sleep random time"
+    # than it should check how many working instances are
+    # if it is the first it should be a seed
+}
+
+preStop() {
+    _log "here leave cluster"
+}
+
+
+health() {
+    #MYIP=$(ip -o -4 addr list eth0 | head -n1 | awk '{print $4}' | cut -d/ -f1)
+    # IPLIST=$(dig A tasks.${CONSUL} +short)
+    MYIP=127.0.0.1
+    if $(nodetool status | grep -Eq "^UN.*$MYIP"); then
+        _log "Node is Up"
+        return 0
+    else
+        _log "Node is Not healthy"
+        return 1
+    fi
+}
+
+_log() {
+    echo "    [CP] $@"
+}
+
+# ---------------------------------------------------
+# parse arguments
+
+# Get function list
+funcs=($(declare -F -p | cut -d " " -f 3))
+
+until
+    if [ ! -z "$1" ]; then
+        # check if the first arg is a function in this file, or use a default
+        if [[ " ${funcs[@]} " =~ " $1 " ]]; then
+            cmd=$1
+            shift 1
+        fi
+
+        $cmd "$@"
+        if [ $? == 127 ]; then
+            help
+        fi
+
+        exit
+    else
+        health
+    fi
+do
+    echo
+done
