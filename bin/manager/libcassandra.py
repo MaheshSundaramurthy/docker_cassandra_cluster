@@ -33,6 +33,7 @@ class CassandraService(object):
         orig_config_text = re.sub("start_rpc: false","start_rpc: true",orig_config_text)
         if myip is not None:
             orig_config_text = re.sub("listen_address: (.*)","listen_address: {}".format(myip),orig_config_text)
+            orig_config_text = re.sub("rpc_address: (.*)","rpc_address: {}".format(myip),orig_config_text)
         # config['cluster_name'] = self.clustername
         # config['endpoint_snitch'] = 'GossipingPropertyFileSnitch'
         # config['start_rpc'] = True
